@@ -6,6 +6,7 @@ import IonIcon from 'react-native-vector-icons/dist/Ionicons'
 
 class App extends Component {
   state = {
+    cameraType : 'back',
     touchableHighlightMouseDownCamera : false,
     touchableHighlightMouseDownSettings : false
   }
@@ -19,12 +20,15 @@ class App extends Component {
             ref={ref => {
               this.camera = ref
             }}
+            type={this.state.cameraType}
             captureAudio={false}
           >
             <View style={styles.settingsIconContainer}>
               <TouchableHighlight
                   underlayColor={'transparent'}
-                  onPress={()=>{console.log("pressed");}}
+                  onPress={()=>{ 
+                    
+                  }}
                   onShowUnderlay={()=>this.setState({touchableHighlightMouseDownSettings:true})}
                   onHideUnderlay={()=>this.setState({touchableHighlightMouseDownSettings:false})} >
                     <IonIcon name={'settings-sharp'} size={35} color={this.state.touchableHighlightMouseDownSettings?'#e8e8e8':'white' } style={{marginEnd:15,marginTop:10}}/>
@@ -34,7 +38,13 @@ class App extends Component {
             <View style={styles.bottomContainer}>
               <TouchableHighlight
                 underlayColor={'transparent'}
-                onPress={()=>{console.log("pressed");}}
+                onPress={()=>{
+                  if(this.state.cameraType === 'back') {
+                    this.setState({cameraType:'front'})
+                  } else {
+                    this.setState({cameraType:'back'}) 
+                  }
+                }}
                 onShowUnderlay={()=>this.setState({touchableHighlightMouseDownCamera:true})}
                 onHideUnderlay={()=>this.setState({touchableHighlightMouseDownCamera:false})} >
                 <MaterialIcon name={'flip-camera-ios'} size={60} color={this.state.touchableHighlightMouseDownCamera?'#e8e8e8':'white' }/> 
