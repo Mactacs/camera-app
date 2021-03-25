@@ -7,6 +7,7 @@ import IonIcon from 'react-native-vector-icons/dist/Ionicons'
 class App extends Component {
   state = {
     cameraType : 'back',
+    flash : false,
     touchableHighlightMouseDownCamera : false,
     touchableHighlightMouseDownSettings : false
   }
@@ -16,6 +17,7 @@ class App extends Component {
           <StatusBar translucent backgroundColor="transparent"/>
           <RNCamera
             style={{ flex: 1, alignItems: 'center' }}
+            flashMode={this.state.flash ? RNCamera.Constants.FlashMode.on : RNCamera.Constants.FlashMode.off}
             autoFocus={RNCamera.Constants.AutoFocus.on}
             ref={ref => {
               this.camera = ref
@@ -24,6 +26,17 @@ class App extends Component {
             captureAudio={false}
           >
             <View style={styles.settingsIconContainer}>
+              <TouchableHighlight
+                  underlayColor={'transparent'}
+                  onPress={()=>{ 
+                    if(this.state.flash) {
+                      this.setState({flash:false})
+                    } else {
+                      this.setState({flash:true})
+                    }
+                  }}>
+                    <IonIcon name={this.state.flash?'ios-flash':'ios-flash-off'} size={35} color={'white'} style={{marginEnd:15,marginTop:10}}/>
+              </TouchableHighlight>
               <TouchableHighlight
                   underlayColor={'transparent'}
                   onPress={()=>{ 
@@ -51,7 +64,7 @@ class App extends Component {
               </TouchableHighlight>
               
               <View style={styles.captureButtonBorder}>
-                <TouchableOpacity style={styles.captureButton}/>
+                <TouchableOpacity style={styles.captureButton} onPress={this.takePicture.bind(this)}/>
               </View>
 
               <View style={styles.galleryButtonBorder}>
@@ -62,6 +75,14 @@ class App extends Component {
       </View>
     )
   }
+
+  takePicture = async () => {
+    if (this.camera) {
+      const options = { quality: 0.5, base64: true };
+      const data = await this.camera.takePictureAsync(options);
+      console.log(data.uri);
+    }
+  };
 }
 
 const styles = StyleSheet.create({
