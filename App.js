@@ -1,8 +1,12 @@
 import React, { Component } from 'react'
-import { StyleSheet, View, TouchableOpacity, StatusBar, TouchableHighlight} from 'react-native'
+import { StyleSheet, View, TouchableOpacity, StatusBar, TouchableHighlight, PermissionsAndroid, Platform} from 'react-native'
 import { RNCamera } from 'react-native-camera'
 import MaterialIcon from 'react-native-vector-icons/dist/MaterialIcons'
 import IonIcon from 'react-native-vector-icons/dist/Ionicons'
+
+import { PACKAGE_NAME } from './src/utils/Constants'
+const RNFS = require('react-native-fs')
+
 
 class App extends Component {
   state = {
@@ -39,9 +43,7 @@ class App extends Component {
               </TouchableHighlight>
               <TouchableHighlight
                   underlayColor={'transparent'}
-                  onPress={()=>{ 
-                    
-                  }}
+                  onPress={ console.log("") }
                   onShowUnderlay={()=>this.setState({touchableHighlightMouseDownSettings:true})}
                   onHideUnderlay={()=>this.setState({touchableHighlightMouseDownSettings:false})} >
                     <IonIcon name={'settings-sharp'} size={35} color={this.state.touchableHighlightMouseDownSettings?'#e8e8e8':'white' } style={{marginEnd:15,marginTop:10}}/>
@@ -78,9 +80,38 @@ class App extends Component {
 
   takePicture = async () => {
     if (this.camera) {
-      const options = { quality: 0.5, base64: true };
-      const data = await this.camera.takePictureAsync(options);
-      console.log(data.uri);
+      if(Platform.OS === 'android') {
+        try {
+          const granted = await PermissionsAndroid.requestMultiple([
+            PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+            PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+          ]);
+        } catch (err) {
+          console.warn(err);
+        }
+        const readGranted = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE); 
+        const writeGranted = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
+        if(!readGranted || !writeGranted) {
+          console.log('Read and write permissions have not been granted');
+          return;
+        }
+        var path = `${RNFS.ExternalStorageDirectoryPath}/Android/media/${PACKAGE_NAME}/images/`;
+        RNFS.mkdir(path)
+
+        var today = new Date();
+        var fileName = today.getFullYear() + "-" + today.getMonth() + "-" + today.getDate() + "-" + today.getHours() + "-" + today.getMinutes() + "-" + today.getSeconds() + ".jpg"
+        var absolutePath = path + fileName
+
+        const options = { path: absolutePath, quality: 0.5, base64: true };
+        const data = await this.camera.takePictureAsync(options);
+
+        console.log(data.uri)
+
+      } else if(Platform.OS === 'ios') {
+        // Future release
+      }
+
+      // console.log(data.uri);
     }
   };
 }
