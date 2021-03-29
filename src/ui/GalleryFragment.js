@@ -5,9 +5,10 @@ const RNFS = require('react-native-fs')
 
 import { PACKAGE_NAME } from '../utils/Constants'
 
-const GalleryFragment = () => {
+const GalleryFragment = ({route,navigation}) => {
 
     const [dataSource,setDataSource] = useState([])
+    const [numColumns, setNumColumns] = useState(3)
 
     useEffect(() => {
         RNFS.readDir(`${RNFS.ExternalStorageDirectoryPath}/Android/media/${PACKAGE_NAME}/images/`)
@@ -22,7 +23,6 @@ const GalleryFragment = () => {
             })
             .then((result) => {
                 if (statResult[0].isFile()) {
-                    // if we have a file, read it
                     return RNFS.readFile(statResult[1], 'utf8');
                 }
             
@@ -31,21 +31,53 @@ const GalleryFragment = () => {
             .catch((err) => {
                 console.log(err.message, err.code);
             });
-      }, []);
+        }, []
+    );
+
+
+    const formatData = (data,numColumns) => {
+        const numberOfFullrows = Math.floor(data.length / numColumns);
+
+        let numberOfElementsLastRow = data.length - (numberOfFullrows * numColumns);
+        while(numberOfElementsLastRow !== numColumns && numberOfElementsLastRow !== 0) {
+            data.push({id: -1, src: ''});
+            numberOfElementsLastRow = numberOfElementsLastRow + 1;
+        }
+        return data
+    }
+
+
+    const renderImage = React.useCallback(
+        ({item}) => {
+            if(item.id == -1) {
+                return (
+                    <View style={[{backgroundColor:'transparent'},styles.imageContainerStyle]}/>
+                )
+            }
+            return (
+                <View style={styles.imageContainerStyle}>
+                    <TouchableOpacity style={{flex: 1}} onPress={() => navigation.navigate('ImagePreview',item)}>
+                        <FastImage style={styles.imageStyle} source={{uri : item.src}}/>
+                    </TouchableOpacity>
+                 </View>
+            )
+        }
+    )
+
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.container} onLayout={(event) => {
+            const {width} = event.nativeEvent.layout
+            const itemWidth = 100
+            const numColumns = Math.floor(width/itemWidth)
+            setNumColumns(numColumns)
+        }}>
             <StatusBar translucent backgroundColor="transparent" barStyle="dark-content"/>
             <FlatList
-                data={dataSource}
-                renderItem={({item}) => (
-                    <View style={styles.imageContainerStyle}>
-                        <TouchableOpacity style={{flex: 1}}>
-                            <FastImage style={styles.imageStyle} source={{uri : item.src}}/>
-                        </TouchableOpacity>
-                    </View>
-                )}
-                numColumns={3}
+                data={formatData(dataSource,numColumns)}
+                renderItem={renderImage}
+                numColumns={numColumns}
+                key={numColumns}
                 keyExtractor={(item,index) => index.toString()}/>
         </SafeAreaView>
     )
@@ -54,16 +86,18 @@ const GalleryFragment = () => {
 const styles = StyleSheet.create({
     container : {
         flex: 1,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
     },
     imageContainerStyle : {
         flex: 1,
         flexDirection: 'column',
+        alignContent:'center',
+        alignItems: 'center',
         margin: 1,
     },
     imageStyle: {
-        height: 120,
-        width: 120
+        height: 100,
+        width: 100
     }
 })
 

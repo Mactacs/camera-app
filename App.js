@@ -7,6 +7,7 @@ import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/
 
 import CameraFragment from './src/ui/CameraFragment'
 import GalleryFragment from './src/ui/GalleryFragment'
+import ImagePreviewFragment from './src/ui/ImagePreviewFragment'
 import FormFragment from './src/ui/FormFragment'
 
 const Main = createStackNavigator()
@@ -18,6 +19,7 @@ const App = () => {
       <Main.Navigator initialRouteName='Camera' screenOptions={{cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS}}>
         <Main.Screen name="Camera" component={CameraFragment} options={{headerShown:false}}/>
         <Main.Screen name="Gallery" component={GalleryFragment} options={{title:"Gallery"}}/>
+        <Main.Screen name="ImagePreview" component={ImagePreviewFragment} options={{headerShown: false}} />
         <Main.Screen name="Form" component={FormFragment} options={{title:"Options"}}/>
       </Main.Navigator>
     </NavigationContainer>
